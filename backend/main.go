@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 )
 
@@ -16,6 +18,9 @@ type Calculation struct {
 }
 
 func (cal *Calculation) Calculate() error {
+	if cal.AskedAmount <= 0 {
+		return fmt.Errorf("Amount should be positive or greater than 0")
+	}
 	switch cal.QuotasNumber {
 	case 6:
 		//cal.QuotasNumber=5
@@ -30,7 +35,7 @@ func (cal *Calculation) Calculate() error {
 		cal.NormalQuota = cal.AskedAmount / 12
 		// cal.FinalQuota = cal.AskedAmount-(12*cal.NormalQuota)
 	default:
-		return fmt.Errorf("not valid amount: %s :(", cal.AskedAmount)
+		return fmt.Errorf("not valid amount: %d :(", cal.AskedAmount)
 	}
 	return nil
 }
@@ -42,4 +47,31 @@ func calculateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//Decode JSON
+	var cal Calculation
+	dec := json.NewDecoder(r.Body)
+	if err := dec.Decode(&cal); err != nil {
+		http.Error(w, "Error reading JSON: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	//Execute calculation
+	if err := cal.Calculate(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	//Answering with JSON
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(cal); err != nil {
+		http.Error(w, "Error building an answer: ("+err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func main() {
+	const port = ":8080"
+	http.HandleFunc("/calculate", calculateHandler)
+	fmt.Printf("Server initialized in http://localhost%s\n", port)
+	log.Fatal(http.ListenAndServe(port, nil))
 }
