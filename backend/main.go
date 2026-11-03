@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math"
 	"net/http"
 )
 
@@ -22,18 +23,28 @@ func (cal *Calculation) Calculate() error {
 		return fmt.Errorf("Amount should be positive or greater than 0")
 	}
 	switch cal.QuotasNumber {
-	case 6:
-		//cal.QuotasNumber=5
-		cal.NormalQuota = cal.AskedAmount / 6
-		//cal.FinalQuota = cal.AskedAmount-(6*cal.NormalQuota)
-	case 8:
-		// cal.QuotasNumber=7
-		cal.NormalQuota = cal.AskedAmount / 8
-		// cal.FinalQuota = cal.AskedAmount-(8*cal.NormalQuota)
-	case 12:
-		// cal.QuotasNumber=11
-		cal.NormalQuota = cal.AskedAmount / 12
-		// cal.FinalQuota = cal.AskedAmount-(12*cal.NormalQuota)
+	//TRYING TO CLEAN THE CODE
+	case 6, 8, 12:
+		// Round regular installments to two decimal places.
+		cal.NormalQuota = math.Round((cal.AskedAmount/float64(cal.QuotasNumber))*100) / 100
+
+		// Adjust the final installment to preserve the exact total.
+		cal.FinalQuota = math.Round(
+			(cal.AskedAmount-cal.NormalQuota*float64(cal.QuotasNumber-1))*100,
+		) / 100
+	// switch cal.QuotasNumber {
+	// case 6:
+	// 	//cal.QuotasNumber=5
+	// 	cal.NormalQuota = cal.AskedAmount / 6
+	// 	//cal.FinalQuota = cal.AskedAmount-(6*cal.NormalQuota)
+	// case 8:
+	// 	// cal.QuotasNumber=7
+	// 	cal.NormalQuota = cal.AskedAmount / 8
+	// 	// cal.FinalQuota = cal.AskedAmount-(8*cal.NormalQuota)
+	// case 12:
+	// 	// cal.QuotasNumber=11
+	// 	cal.NormalQuota = cal.AskedAmount / 12
+	// 	// cal.FinalQuota = cal.AskedAmount-(12*cal.NormalQuota)
 	default:
 		return fmt.Errorf("not valid amount: %d :(", cal.AskedAmount)
 	}
