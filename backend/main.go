@@ -52,6 +52,11 @@ func (cal *Calculation) Calculate() error {
 }
 
 func calculateHandler(w http.ResponseWriter, r *http.Request) {
+	// CORS configuration
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
 	//Only allow post
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed - use POST", http.StatusMethodNotAllowed)
