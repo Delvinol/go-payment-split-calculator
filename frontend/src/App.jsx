@@ -225,6 +225,23 @@ function App() {
                 : "--"}
             </strong>
           </div>
+          <div className="result-row">
+            <span>Normal installment</span>
+            <strong>
+              {result
+                ? `S/ ${formatCurrency(result.normalquota)}`
+                : "--"}
+            </strong>
+          </div>
+
+          <div className="result-row">
+            <span>Final installment</span>
+            <strong>
+              {result
+                ? `S/ ${formatCurrency(result.finalquota)}`
+                : "--"}
+            </strong>
+          </div>
         </div>
 
         {/* Loading and error messages */}
