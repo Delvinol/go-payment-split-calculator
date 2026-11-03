@@ -32,6 +32,7 @@ func (cal *Calculation) Calculate() error {
 		cal.FinalQuota = math.Round(
 			(cal.AskedAmount-cal.NormalQuota*float64(cal.QuotasNumber-1))*100,
 		) / 100
+		//test
 	// switch cal.QuotasNumber {
 	// case 6:
 	// 	//cal.QuotasNumber=5
