@@ -1,18 +1,22 @@
 # Go Payment Split Calculator
 
-A full-stack payment installment calculator built with **Go** and **React**. The application calculates installment amounts based on a requested payment amount and the selected number of installments.
+A full-stack payment installment calculator built with **Go, React, and Docker**.
+
+The application allows users to enter a payment amount, select the number of installments, and automatically calculate the installment breakdown through a Go REST API.
 
 ## Overview
 
-The project consists of a Go backend that exposes a REST API and a React frontend built with Vite.
+This project demonstrates a full-stack application where a React frontend communicates with a Go backend through HTTP requests.
 
-The backend validates incoming requests, processes installment calculations, and returns the results in JSON format.
+The backend validates the input, calculates the installment amounts, handles rounding differences, and returns the results in JSON format.
+
+Both services are containerized and managed using Docker Compose.
 
 ## Tech Stack
 
 **Backend**
 - Go
-- Standard Go libraries (`net/http`, `encoding/json`)
+- Standard Go libraries (`net/http`, `encoding/json`, `math`)
 - REST API
 - JSON request and response handling
 
@@ -22,15 +26,21 @@ The backend validates incoming requests, processes installment calculations, and
 - JavaScript
 - CSS
 
+**DevOps**
+- Docker
+- Docker Compose
+
 ## Features
 
-- Calculate payment installments.
+- Calculate payment installments automatically.
 - Support for 6, 8, and 12 installments.
 - Validate payment amounts.
-- Validate the number of installments.
+- Validate installment options.
+- Adjust the final installment to account for rounding differences.
 - REST API communication using HTTP POST.
 - JSON-based request and response handling.
 - HTTP error handling.
+- Dockerized frontend and backend services.
 
 ## Project Structure
 
@@ -38,14 +48,17 @@ The backend validates incoming requests, processes installment calculations, and
 go-payment-split-calculator/
 │
 ├── backend/
+│   ├── Dockerfile
 │   ├── go.mod
 │   └── main.go
 │
 ├── frontend/
+│   ├── Dockerfile
 │   ├── src/
 │   ├── index.html
 │   └── package.json
 │
+├── docker-compose.yml
 └── README.md
 ```
 
@@ -53,60 +66,74 @@ go-payment-split-calculator/
 
 ### Prerequisites
 
-Make sure you have installed:
+To run the complete application using Docker, you only need:
 
-- [Go](https://go.dev/dl/)
-- [Node.js](https://nodejs.org/)
-- npm
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+
+Make sure Docker Desktop is running before proceeding.
 
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/go-payment-split-calculator.git
+git clone https://github.com/Delvinol/go-payment-split-calculator.git
+
 cd go-payment-split-calculator
 ```
 
-### 2. Run the Backend
+### 2. Build and start the application
 
-Navigate to the backend directory:
-
-```bash
-cd backend
-```
-
-Start the Go server:
+Run the following command from the project's root directory:
 
 ```bash
-go run main.go
+docker compose up --build
 ```
 
-The API will be available at:
+Docker Compose will:
 
-```text
+1. Build the Go backend image.
+2. Build the React frontend image.
+3. Start both containers.
+4. Expose the application ports.
+
+Wait until both services have started successfully.
+
+### 3. Open the application
+
+Open your browser and navigate to:
+
+**Frontend:**
+http://localhost:5174
+
+**Backend API:**
 http://localhost:8080
-```
 
-### 3. Run the Frontend
+The frontend will communicate with the backend automatically.
 
-Open another terminal and navigate to the frontend directory:
+### 4. How to use the application
+
+1. Enter the amount you want to split.
+2. Select the number of installments: 6, 8, or 12.
+3. The application automatically sends a request to the backend.
+4. The backend calculates the installment amounts.
+5. The frontend displays the calculation results.
+
+No additional button is required to trigger the calculation if the amount and installment selection are valid.
+
+### 5. Stop the application
+
+To stop the containers, press `CTRL + C` in the terminal where Docker Compose is running.
+
+Alternatively, execute:
 
 ```bash
-cd frontend
+docker compose down
 ```
 
-Install dependencies:
+To start the application again without rebuilding the images:
 
 ```bash
-npm install
+docker compose up
 ```
-
-Start the Vite development server:
-
-```bash
-npm run dev
-```
-
-Open the local URL displayed in your terminal to access the application.
 
 ## API Documentation
 
@@ -122,6 +149,12 @@ POST /calculate
 
 ```text
 http://localhost:8080
+```
+
+**Full URL:**
+
+```text
+http://localhost:8080/calculate
 ```
 
 **Request Body:**
@@ -140,7 +173,7 @@ http://localhost:8080
   "askedamount": 1200,
   "quotasnumber": 6,
   "normalquota": 200,
-  "finalquota": 0
+  "finalquota": 200
 }
 ```
 
@@ -151,6 +184,22 @@ http://localhost:8080
 | 6 | Split the amount into 6 installments |
 | 8 | Split the amount into 8 installments |
 | 12 | Split the amount into 12 installments |
+
+### Calculation Logic
+
+The backend divides the requested amount into equal installments, rounding each regular installment to two decimal places.
+
+The final installment is adjusted to ensure that the sum of all installments matches the original amount.
+
+For example:
+
+| Description | Amount |
+|---|---:|
+| Requested amount | $1,000.00 |
+| Number of installments | 6 |
+| First 5 installments | $166.67 each |
+| Final installment | $166.65 |
+| Total | $1,000.00 |
 
 ### Error Handling
 
@@ -172,13 +221,24 @@ The backend uses Go's standard library to handle HTTP requests and JSON processi
 - **calculateHandler:** Handles HTTP requests, processes JSON data, executes calculations, and returns responses.
 - **main function:** Initializes the HTTP server and registers the API endpoint.
 
+## Docker Architecture
+
+The application consists of two independent services managed through Docker Compose:
+
+| Service | Technology | Port |
+|---|---|---|
+| Backend | Go REST API | 8080 |
+| Frontend | React + Vite | 5174 |
+
+Docker Compose manages the build process, container startup, port mapping, and service dependencies.
+
 ## Future Improvements
 
-- Implement final installment adjustment for rounding differences.
-- Add unit tests for calculation logic.
+- Add automated unit and integration tests.
 - Improve input validation and error responses.
-- Integrate the React frontend with the Go REST API.
-- Add Docker support.
+- Add configurable installment options.
+- Implement a more detailed payment summary.
+- Add CI/CD automation.
 
 ## Author
 
@@ -186,4 +246,4 @@ The backend uses Go's standard library to handle HTTP requests and JSON processi
 
 Software Developer | Go | React | REST APIs | SQL
 
-[GitHub](https://github.com/YOUR_USERNAME)
+[GitHub](https://github.com/Delvinol)
